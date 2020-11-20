@@ -12,9 +12,6 @@ var length{Rows} >= 0;
 
 var longestRow >= 0;
 
-s.t. FitInCasierDesk{r in Rows : r <= cashierCount}:
-    length[r] >= cashierLength;
-
 s.t. FillUpRowsWithProduct{p in ProductGroups}:
     sum{r in Rows} productPlace[r,p] = 1;
 
