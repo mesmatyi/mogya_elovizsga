@@ -1,0 +1,34 @@
+name: Test Basic solution
+on: push
+
+jobs:
+  basic-check-data:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          EXERCISES=""
+          cd basic/
+          for i in `ls -d *.dat`; do 
+            EXERCISES="\"$i\", $EXERCISES"
+          done
+          echo $EXERCISES
+          echo "exercises=$EXERCISES" >> $GITHUB_ENV
+      - id: set-matrix
+        run: echo "::set-output name=matrix::{\"exercise\":[$exercises]}"
+  basic-input-output-test:
+    needs: basic-check-data
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.basic-check-data.outputs.matrix)}}
+    name: Basic Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo apt update && sudo apt install -y glpk-utils
+      - run: |
+          cd basic/
+          glpsol -m model.mod -d ${{ matrix.exercise }} -y "${{ matrix.exercise }}_sol.txt"
+          diff "${{ matrix.exercise }}.txt" "${{ matrix.exercise }}_sol.txt"
